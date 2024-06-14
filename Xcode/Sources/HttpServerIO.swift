@@ -47,6 +47,11 @@ open class HttpServerIO {
     /// It's only used when the server is started with `forceIPv4` option set to true.
     /// Otherwise, `listenAddressIPv6` will be used.
     public var listenAddressIPv4: String?
+    
+    #if !os(Linux)
+    /// SSL certificate to use in TLS session
+    public var sslCertificate: CFArray?
+    #endif
 
     /// String representation of the IPv6 address to receive requests from.
     /// It's only used when the server is started with `forceIPv4` option set to false.
@@ -116,6 +121,19 @@ open class HttpServerIO {
     }
 
     private func handleConnection(_ socket: Socket) {
+        defer {
+            socket.close()
+        }
+        #if !os(Linux)
+        if let cert = sslCertificate {
+            do {
+                try socket.startTlsSession(with: cert)
+            } catch {
+                print("Failed to start TLS session: \(error)")
+                return
+            }
+        }
+        #endif
         let parser = HttpParser()
         while self.operating, let request = try? parser.readHttpRequest(socket) {
             let request = request
@@ -138,7 +156,7 @@ open class HttpServerIO {
             }
             if !keepConnection { break }
         }
-        socket.close()
+//        socket.close()
     }
 
     private struct InnerWriteContext: HttpResponseBodyWriter {
