@@ -9,7 +9,7 @@ import Foundation
 
 #if !os(Linux)
 private func ensureNoErr(_ status: OSStatus) throws {
-    guard status == noErr else {
+    if status != noErr, status != errSSLWouldBlock {
         throw Errno.sslError(from: status)
     }
 }
