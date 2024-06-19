@@ -56,7 +56,6 @@ open class TlsSession {
         try ensureNoErr(SSLSetIOFuncs(context, sslRead, sslWrite))
         try ensureNoErr(SSLSetConnection(context, fdPtr))
         try ensureNoErr(SSLSetCertificate(context, certificate))
-        try ensureNoErr(SSLSetMaxDatagramRecordSize(context, maxframesize))
     }
 
     open func close() {
