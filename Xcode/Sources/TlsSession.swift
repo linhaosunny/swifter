@@ -52,15 +52,11 @@ open class TlsSession {
         }
         context = newContext
         fdPtr.pointee = fd
-        var maxSize: Int = maxframesize
         
         try ensureNoErr(SSLSetIOFuncs(context, sslRead, sslWrite))
         try ensureNoErr(SSLSetConnection(context, fdPtr))
         try ensureNoErr(SSLSetCertificate(context, certificate))
-        try ensureNoErr(SSLGetMaxDatagramRecordSize(context, &maxSize))
-        if maxframesize > maxSize {
-            try ensureNoErr(SSLSetMaxDatagramRecordSize(context, maxframesize))
-        }
+        try ensureNoErr(SSLSetMaxDatagramRecordSize(context, maxframesize))
     }
 
     open func close() {

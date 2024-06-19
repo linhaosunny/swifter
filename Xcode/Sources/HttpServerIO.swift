@@ -129,7 +129,7 @@ open class HttpServerIO {
         #if !os(Linux)
         if let cert = sslCertificate {
             do {
-                try socket.startTlsSession(with: cert)
+                try socket.startTlsSession(with: cert, maxframesize: sslMaxFrameSize)
             } catch {
                 print("Failed to start TLS session: \(error)")
                 return
