@@ -51,6 +51,8 @@ open class HttpServerIO {
     #if !os(Linux)
     /// SSL certificate to use in TLS session
     public var sslCertificate: CFArray?
+    /// SSL max frame size
+    public var sslMaxFrameSize: Int = 16384
     #endif
 
     /// String representation of the IPv6 address to receive requests from.

@@ -9,7 +9,7 @@ import Foundation
 
 #if !os(Linux)
 private func ensureNoErr(_ status: OSStatus) throws {
-    if status != noErr, status != errSSLWouldBlock {
+    guard status == noErr else {
         throw Errno.sslError(from: status)
     }
 }
@@ -46,15 +46,21 @@ open class TlsSession {
     private let context: SSLContext
     private var fdPtr = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
 
-    init(fd: Int32, certificate: CFArray) throws {
+    init(fd: Int32, certificate: CFArray, maxframesize: Int) throws {
         guard let newContext = SSLCreateContext(nil, .serverSide, .streamType) else {
             throw SocketError.tlsSessionFailed("Could not create new SSL context")
         }
         context = newContext
         fdPtr.pointee = fd
+        var maxSize: Int = maxframesize
+        
         try ensureNoErr(SSLSetIOFuncs(context, sslRead, sslWrite))
         try ensureNoErr(SSLSetConnection(context, fdPtr))
         try ensureNoErr(SSLSetCertificate(context, certificate))
+        try ensureNoErr(SSLGetMaxDatagramRecordSize(context, &maxSize))
+        if maxframesize > maxSize {
+            try ensureNoErr(SSLSetMaxDatagramRecordSize(context, maxframesize))
+        }
     }
 
     open func close() {
